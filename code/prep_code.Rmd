@@ -1,0 +1,178 @@
+CRIME DATA
+```{r}
+link_crime = "https://github.com/qziegler/project/raw/master/data/FY2017_DCCrimeData.csv"
+
+crimedf <- read.csv(link_crime, stringsAsFactors = FALSE)
+names(crimedf)
+```
+```{r}
+str(crimedf)
+```
+
+
+
+
+
+RACE DATA
+```{r}
+link_race = "https://github.com/qziegler/project/raw/master/data/ACS_16_5YR_B03002/ACS_16_5YR_B03002_with_ann.csv"
+
+racedf <- read.csv(link_race, stringsAsFactors = FALSE)
+names(racedf)
+```
+
+```{r}
+racedf <- racedf[rownames(racedf)!=1,]
+keepvars <- c("GEO.id",
+              "GEO.id2", 
+              "HD01_VD01",
+              "HD01_VD03",
+              "HD01_VD04",
+              "HD01_VD05",
+              "HD01_VD06",
+              "HD01_VD07",
+              "HD01_VD08",
+              "HD01_VD09",
+              "HD01_VD12")
+
+racedf <- racedf[,keepvars]
+myvars <- c("geo_id",
+            "geo_id2",
+            "total_pop",
+            "total_nhw",
+            "total_black",
+            "total_aian",
+            "total_asian",
+            "total_api",
+            "total_other",
+            "total_multi",
+            "total_hisp")
+
+names(racedf) <- myvars
+str(racedf)
+
+```
+
+
+```{r}
+racedf$census_tract <- substring(racedf$geo_id2, 6,)
+racedf$census_tract <- as.numeric(racedf$census_tract)
+head(racedf)
+```
+
+```{r}
+loopvars <- myvars[!(myvars %in% c("geo_id", "geo_id2"))]
+loopvars
+
+for (var in loopvars) {
+  
+  racedf[[var]] <- as.numeric(racedf[[var]])
+  
+}
+
+head(racedf)
+```
+
+```{r}
+
+final_df <- merge(crimedf, racedf, by.x = "CENSUS_TRACT", by.y = "census_tract", all.x = TRUE, all.y = TRUE)
+sum(is.na(final_df$total_pop))
+
+```
+
+Non-merging records have no census-tract information
+```{r}
+table(final_df$CENSUS_TRACT[is.na(final_df$total_pop)], useNA = "always")
+```
+
+
+
+
+MEDIAN HOUSEHOLD INCOME DATA
+```{r}
+link_income = "https://github.com/qziegler/project/raw/master/data/ACS_16_5YR_S1903/ACS_16_5YR_S1903_with_ann.csv"
+
+incomedf <- read.csv(link_income, stringsAsFactors = FALSE)
+```
+
+```{r}
+incomedf <- incomedf[rownames(incomedf)!=1,]
+keepvars <- c("GEO.id",
+              "GEO.id2", 
+              "HC02_EST_VC02")
+
+incomedf <- incomedf[,keepvars]
+myvars <- c("geo_id",
+            "geo_id2",
+            "hh_med_income")
+
+names(incomedf) <- myvars
+str(incomedf)
+```
+```{r}
+incomedf$census_tract <- substring(incomedf$geo_id2, 6,)
+incomedf$census_tract <- as.numeric(incomedf$census_tract)
+
+
+incomedf$hh_med_income[incomedf$hh_med_income == "-"] <- NA
+incomedf$hh_med_income <- as.numeric(incomedf$hh_med_income)
+incomedf <- incomedf[,c("census_tract", "hh_med_income")]
+head(incomedf)
+```
+```{r}
+final_df <- merge(final_df, incomedf, by.x = "CENSUS_TRACT", by.y = "census_tract", all.x = TRUE, all.y = TRUE)
+sum(is.na(final_df$total_pop))
+```
+
+
+
+
+
+UNEMPLOYMENT RATE DATA (16 YEARS & OLDER) DATA
+```{r}
+link_unemp = "https://github.com/qziegler/project/raw/master/data/ACS_16_5YR_S2301/ACS_16_5YR_S2301_with_ann.csv"
+
+unempdf <- read.csv(link_unemp, stringsAsFactors = FALSE)
+```
+
+```{r}
+unempdf <- unempdf[rownames(unempdf)!=1,]
+keepvars <- c("GEO.id",
+              "GEO.id2", 
+              "HC04_EST_VC01")
+
+unempdf <- unempdf[,keepvars]
+myvars <- c("geo_id",
+            "geo_id2",
+            "unemp_rate")
+
+names(unempdf) <- myvars
+str(unempdf)
+```
+
+```{r}
+unempdf$census_tract <- substring(unempdf$geo_id2, 6,)
+unempdf$census_tract <- as.numeric(unempdf$census_tract)
+
+
+unempdf$unemp_rate[unempdf$unemp_rate == "-"] <- NA
+unempdf$unemp_rate <- as.numeric(unempdf$unemp_rate)
+unempdf <- unempdf[,c("census_tract", "unemp_rate")]
+head(unempdf)
+```
+
+```{r}
+final_df <- merge(final_df, unempdf, by.x = "CENSUS_TRACT", by.y = "census_tract", all.x = TRUE, all.y = TRUE)
+sum(is.na(final_df$total_pop))
+```
+
+```{r}
+str(final_df)
+```
+
+```{r}
+final_df_path = "/Users/qziegler/Desktop/visual_analytics_class/VisualAnalytics_Project/data/dc_crime_tract_demo.csv"
+
+write.csv(final_df, final_df_path, row.names = FALSE, append = FALSE)
+```
+
