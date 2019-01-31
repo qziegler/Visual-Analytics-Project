@@ -171,7 +171,7 @@ str(final_df)
 ```
 
 ```{r}
-final_df_path = "/Users/qziegler/Desktop/visual_analytics_class/VisualAnalytics_Project/data/dc_crime_tract_demo.csv"
+final_df_path = "/Users/qziegler/Desktop/visual_analytics_class/Visual-Analytics-Project/data/dc_crime_tract_demo.csv"
 
 write.csv(final_df, final_df_path, row.names = FALSE, append = FALSE)
 ```
