@@ -176,3 +176,27 @@ final_df_path = "/Users/qziegler/Desktop/visual_analytics_class/Visual-Analytics
 write.csv(final_df, final_df_path, row.names = FALSE, append = FALSE)
 ```
 
+
+```{r}
+data_link = "https://github.com/qziegler/Visual-Analytics-Project/raw/master/data/dc_crime_tract_demo.csv"
+crimedf <- read.csv(data_link)
+```
+
+
+```{r}
+table(crimedf$OFFENSE, useNA = "always")
+violent_crimes <- c("ARSON", "ASSAULT W/DANGEROUS WEAPON", "HOMICIDE", "ROBBERY", "SEX ABUSE")
+
+crimedf$violent_crime <- ifelse(crimedf$OFFENSE %in% violent_crimes, 1, 0)
+```
+
+```{r}
+census_pop <- aggregate(total_pop ~ CENSUS_TRACT, data = crimedf, mean)
+census_vc  <- aggregate(violent_crime ~ CENSUS_TRACT, data = crimedf, sum)
+
+census_violent <- merge(census_pop, census_vc, by="CENSUS_TRACT")
+
+census_violent$vcrate <- (census_violent$violent_crime/census_violent$total_pop)*100000
+head(census_violent)
+```
+
