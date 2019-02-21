@@ -121,7 +121,11 @@ head(incomedf)
 ```
 ```{r}
 final_df <- merge(final_df, incomedf, by.x = "CENSUS_TRACT", by.y = "census_tract", all.x = TRUE, all.y = TRUE)
-sum(is.na(final_df$total_pop))
+sum(is.na(final_df$hh_med_income))
+```
+```{r}
+tmp <- final_df[is.na(final_df$hh_med_income),]
+table(tmp$CENSUS_TRACT, useNA = "always")
 ```
 
 
@@ -163,8 +167,67 @@ head(unempdf)
 
 ```{r}
 final_df <- merge(final_df, unempdf, by.x = "CENSUS_TRACT", by.y = "census_tract", all.x = TRUE, all.y = TRUE)
-sum(is.na(final_df$total_pop))
+sum(is.na(final_df$unemp_rate))
 ```
+
+```{r}
+tmp <- final_df[is.na(final_df$unemp_rate),]
+table(tmp$CENSUS_TRACT, useNA = "always")
+```
+
+
+
+
+
+VACANCY RATE DATA
+```{r}
+link_vacant = "https://github.com/qziegler/project/raw/master/data/ACS_16_5YR_B25002/ACS_16_5YR_B25002_with_ann.csv"
+
+vacantdf <- read.csv(link_vacant, stringsAsFactors = FALSE)
+```
+
+```{r}
+vacantdf <- vacantdf[rownames(vacantdf)!=1,]
+keepvars <- c("GEO.id",
+              "GEO.id2", 
+              "HD01_VD01",
+              "HD01_VD03")
+
+vacantdf <- vacantdf[,keepvars]
+myvars <- c("geo_id",
+            "geo_id2",
+            "total_units",
+            "vacant_units")
+
+names(vacantdf) <- myvars
+str(vacantdf)
+```
+
+```{r}
+vacantdf$census_tract <- substring(vacantdf$geo_id2, 6,)
+vacantdf$census_tract <- as.numeric(vacantdf$census_tract)
+
+vacantdf$total_units <- as.numeric(vacantdf$total_units)
+vacantdf$vacant_units <- as.numeric(vacantdf$vacant_units)
+
+vacantdf$vacancy_rate <- (vacantdf$vacant_units/vacantdf$total_units)
+
+vacantdf <- vacantdf[,c("census_tract", "vacancy_rate")]
+head(vacantdf)
+```
+
+```{r}
+final_df <- merge(final_df, vacantdf, by.x = "CENSUS_TRACT", by.y = "census_tract", all.x = TRUE, all.y = TRUE)
+sum(is.na(final_df$vacancy_rate))
+```
+
+```{r}
+tmp <- final_df[is.na(final_df$vacany_rate),]
+table(tmp$CENSUS_TRACT, useNA = "always")
+```
+
+
+
 
 ```{r}
 str(final_df)
